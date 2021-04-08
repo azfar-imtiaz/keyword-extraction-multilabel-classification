@@ -1,35 +1,48 @@
 import csv
 import joblib
+from random import random
 from pprint import pprint
 
 
-def dump_data_to_pkl(input_filename, output_filename, num_rows=-1):
+def dump_data_to_pkl(input_filename, output_filename, num_rows=-1, randomize=False):
+
+    def parse_row(row):
+        title_text = row[1]
+        body_text = row[2]
+        # the tags are separated by space. Multiword tags are connected by hyphen
+        tags = row[3].split()
+        return {
+            'title': title_text,
+            'body': body_text,
+            'tags': tags
+        }
+
     data_dict = []
     with open(input_filename, 'r') as rfile:
         reader = csv.reader(rfile)
+        num_rows_processed = 0
         for index, row in enumerate(reader):
             # skip header row
             if index == 0:
                 continue
 
             if num_rows > 0:
-                if index - 1 >= num_rows:
+                if num_rows_processed >= num_rows:
                     break
 
             if index % 50000 == 0:
                 print("{} rows processed!".format(index))
 
-            title_text = row[1]
-            body_text = row[2]
-            # the tags are separated by space. Multiword tags are connected by hyphen
-            tags = row[3].split()
-            data_dict.append({
-                'title': title_text,
-                'body': body_text,
-                'tags': tags
-            })
+            if randomize:
+                selection_prob = random()
+                if selection_prob >= 0.5:
+                    data_dict.append(parse_row(row))
+                    num_rows_processed += 1
+            else:
+                data_dict.append(parse_row(row))
+                num_rows_processed += 1
 
-    print("Total number of rows in data: %d", len(data_dict))
+    print("Total number of rows in data: ", len(data_dict))
     pprint(data_dict[-1])
     joblib.dump(data_dict, output_filename)
 
@@ -37,4 +50,4 @@ def dump_data_to_pkl(input_filename, output_filename, num_rows=-1):
 if __name__ == '__main__':
     filename_csv = "../data/Train.csv"
     filename_pkl = "../data/training_data.pkl"
-    dump_data_to_pkl(filename_csv, filename_pkl, num_rows=50000)
+    dump_data_to_pkl(filename_csv, filename_pkl, num_rows=10000, randomize=True)
