@@ -1,3 +1,5 @@
+import os
+import re
 import csv
 import joblib
 from random import random
@@ -47,7 +49,27 @@ def dump_data_to_pkl(input_filename, output_filename, num_rows=-1, randomize=Fal
     joblib.dump(data_dict, output_filename)
 
 
+def identify_unique_tags(data):
+    tags = set()
+    tags_rg = '<\\w+>'
+    for i in range(len(data)):
+        body_text = data[i]['body']
+        tags_in_text = re.findall(tags_rg, body_text)
+        tags_in_text = [a.lower() for a in tags_in_text]
+        tags = tags.union(tags_in_text)
+
+    print(', '.join(tags))
+
+
+def explore_data(filename_pkl):
+    data = joblib.load(filename_pkl)
+
+
 if __name__ == '__main__':
     filename_csv = "../data/Train.csv"
     filename_pkl = "../data/training_data.pkl"
-    dump_data_to_pkl(filename_csv, filename_pkl, num_rows=10000, randomize=True)
+    if not os.path.exists(filename_pkl):
+        dump_data_to_pkl(filename_csv, filename_pkl, num_rows=100000, randomize=True)
+
+    data = joblib.load(filename_pkl)
+    identify_unique_tags(data)
