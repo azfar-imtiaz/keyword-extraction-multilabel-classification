@@ -59,9 +59,9 @@ def classify_texts(test_vectors, clf):
 if __name__ == '__main__':
     print("Loading data...")
     data = joblib.load(config.FILENAME_PKL)
-    data = data[:10000]
+    # data = data[:10000]
     X = [a['body'] for a in data]
-    y = [a['tags'] for a in data]
+    y = [a['keywords'] for a in data]
 
     print("Vectorizing class labels...")
     y_vectors = prepare_class_data(y)
